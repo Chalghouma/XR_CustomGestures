@@ -52,7 +52,7 @@ labels_dictionary = {
 labels_map = ['Circle','L','RightArrow']
 
 #Replace with your root folder that holds the dataset of images
-all_bytes ,all_labels = get_all_categories_shuffled("<<Your RootFolder>>")
+all_bytes ,all_labels = get_all_categories_shuffled("D:\\UnityProjects\\Athena_Related\\HoloLens_Gestures\\Unity\\HoloLens_Gestures\\Images")
 print(all_labels)
 data_length = len(all_labels)
 for i in range(0, data_length ):
