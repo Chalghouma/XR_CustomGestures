@@ -19,7 +19,7 @@ namespace Assets.Scripts.Drawing
             BuildCorners();
             BuildGrid();
         }
-        Vector3 topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner;
+        public Vector3 TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner;
         private void BuildCorners()
         {
             var renderer = GetComponent<Renderer>();
@@ -29,13 +29,13 @@ namespace Assets.Scripts.Drawing
             var horizontalOffset = bounds.size.x / 2;
             var verticalOffset = bounds.size.y / 2;
 
-            topLeftCorner = transform.position - transform.right * horizontalOffset + transform.up * verticalOffset;
-            topRightCorner = transform.position + transform.right * horizontalOffset + transform.up * verticalOffset;
+            TopLeftCorner = transform.position - transform.right * horizontalOffset + transform.up * verticalOffset;
+            TopRightCorner = transform.position + transform.right * horizontalOffset + transform.up * verticalOffset;
 
-            bottomLeftCorner = transform.position - transform.right * horizontalOffset - transform.up * verticalOffset;
-            bottomRightCorner = transform.position + transform.right * horizontalOffset - transform.up * verticalOffset;
+            BottomLeftCorner = transform.position - transform.right * horizontalOffset - transform.up * verticalOffset;
+            BottomRightCorner = transform.position + transform.right * horizontalOffset - transform.up * verticalOffset;
 
-            var list = new List<Vector3> { topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner };
+            var list = new List<Vector3> { TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner };
             GameObject cornersHolder = new GameObject { name = "cornersHolder " };
             foreach (var item in list)
             {
@@ -65,8 +65,8 @@ namespace Assets.Scripts.Drawing
         {
             _grid = new List<GridComponent>();
 
-            var hVector = (topRightCorner - topLeftCorner);
-            var vVector = (bottomLeftCorner - topLeftCorner);
+            var hVector = (TopRightCorner - TopLeftCorner);
+            var vVector = (BottomLeftCorner - TopLeftCorner);
 
             GameObject gridHolder = new GameObject { name = "gridHolder" };
 
@@ -87,7 +87,7 @@ namespace Assets.Scripts.Drawing
                     var hOffset = hVector * (float)j / (Horizontal_Size - 1);
                     var vOffset = vVector * (float)i / (Vertical_Size - 1);
 
-                    gridElement.transform.position = topLeftCorner + hOffset + vOffset + new Vector3(0, 0, -0001f);
+                    gridElement.transform.position = TopLeftCorner + hOffset + vOffset + new Vector3(0, 0, -0001f);
                     gridElement.transform.localScale = new Vector3(hSize, ySize, 0.01f);
 
                     gridElement.GetComponent<Renderer>().material
@@ -100,6 +100,31 @@ namespace Assets.Scripts.Drawing
                 }
             }
         }
+
+        /// <summary>
+        /// Paints the corresponding GridElement according to the relative position
+        /// </summary>
+        /// <param name="horizontalRelative">Clamped between [0,1]</param>
+        /// <param name="verticalRelative">Clamped between [0,1]</param>
+        public void Paint(float horizontalRelative, float verticalRelative)
+        {
+            int rowIndex = (int)Mathf.Clamp(Mathf.Round(Vertical_Size * verticalRelative), 0f, (int)(Vertical_Size - 1));
+            int verticalIndex = (int)(horizontalRelative * Horizontal_Size);
+            int index = verticalIndex + rowIndex * Horizontal_Size;
+
+
+            _grid[index].Trigger();
+            if (rowIndex != Vertical_Size - 1)
+                _grid[index + Horizontal_Size].Trigger();
+            if (verticalIndex != Horizontal_Size - 1)
+            {
+                _grid[1 + index].Trigger();
+                if (verticalIndex != Vertical_Size - 1)
+                    _grid[1 + index + Horizontal_Size].Trigger();
+            }
+
+        }
+
         bool isRecording = false;
         public byte[] GetData()
         {
@@ -113,56 +138,6 @@ namespace Assets.Scripts.Drawing
             return array;
         }
 
-        void Update()
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                isRecording = true;
-            }
-            if (Input.GetMouseButtonUp(0))
-            {
-                isRecording = false;
-            }
-
-            if (isRecording)
-            {
-                var mousePosition = Input.mousePosition;
-                var relativeX = mousePosition.x / Screen.width;
-                var relativeY = mousePosition.y / Screen.height;
-
-                var ray = MainCamera.ViewportPointToRay(new Vector3(relativeX, relativeY, 0));
-
-                float intersectionResult = 0;
-
-                var plane = new Plane(transform.forward, transform.position);
-                plane.Raycast(ray, out intersectionResult);
-
-                Vector3 intersection = ray.origin + ray.direction * intersectionResult;
-
-                float horizontalRelative = (intersection.x - topLeftCorner.x) / (topRightCorner.x - topLeftCorner.x);
-                float verticalRelative = (intersection.y - topLeftCorner.y) / (bottomLeftCorner.y - topLeftCorner.y);
-
-                if (horizontalRelative > 1 || horizontalRelative < 0 || verticalRelative > 1 || verticalRelative < 0)
-                    return;
-
-                int rowIndex = (int)Mathf.Clamp(Mathf.Round(Vertical_Size * verticalRelative), 0f, (int)(Vertical_Size - 1));
-                int verticalIndex = (int)(horizontalRelative * Horizontal_Size);
-                int index = verticalIndex + rowIndex * Horizontal_Size;
-                Debug.LogFormat("Row : {0} Col : {1}", rowIndex, verticalIndex);
-
-                _grid[index].Trigger();
-                if (rowIndex != Vertical_Size- 1)
-                    _grid[index + Horizontal_Size].Trigger();
-                if (verticalIndex != Horizontal_Size - 1)
-                {
-                    _grid[1 + index].Trigger();
-                    if (verticalIndex != Vertical_Size - 1)
-                        _grid[1 + index + Horizontal_Size].Trigger();
-                }
-
-
-            }
-        }
 
         public void CleanBlackColor()
         {

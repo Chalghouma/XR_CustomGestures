@@ -339,6 +339,7 @@ GameObject:
   - component: {fileID: 1429876340}
   - component: {fileID: 1429876339}
   - component: {fileID: 1429876338}
+  - component: {fileID: 1429876342}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -359,6 +360,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GridElementPrefab: {fileID: 702759444}
   MainCamera: {fileID: 534669904}
+  TopLeftCorner: {x: 0, y: 0, z: 0}
+  TopRightCorner: {x: 0, y: 0, z: 0}
+  BottomLeftCorner: {x: 0, y: 0, z: 0}
+  BottomRightCorner: {x: 0, y: 0, z: 0}
 --- !u!23 &1429876339
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -414,3 +419,16 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1429876342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1429876337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5683b96ef9a8a7a45b3944f41da106fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GridDrawer: {fileID: 1429876338}
+  MainCamera: {fileID: 534669904}
