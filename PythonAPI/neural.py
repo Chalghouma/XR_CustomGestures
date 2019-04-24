@@ -30,7 +30,7 @@ class NeuralNet():
         
         
   def save_model(self,path):
-    self.model.save(path)
+    self.model.save(path+'.modelconfig')
 
   def load_model(self,path):
     self.build_layers()

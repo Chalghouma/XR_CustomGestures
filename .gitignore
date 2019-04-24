@@ -7,6 +7,11 @@ UnityProject/[Bb]uild/
 UnityProject/[Bb]uilds/
 UnityProject/[Ll]ogs/
 
+*.pyc
+#We'll store tensorflow models with .modelconfig extension
+PythonAPI/*.modelconfig
+#Basic binary files that store the raw array for test images (Single Channel)
+PythonAPI/*.img
 # Never ignore Asset meta data
 !UnityProject/[Aa]ssets/**/*.meta
 
