@@ -13,7 +13,6 @@ namespace Assets.Scripts.Gesture
     {
         const float DetectableFrameWidth = .5f;
         const float DetectableFrameHeight = .5f;
-        const float DetectableFrameDistanceFromCamera = .75f;
 
         public GridDrawer GridDrawer;
 
@@ -31,10 +30,11 @@ namespace Assets.Scripts.Gesture
         public bool IsRecording { get; private set; }
         public void OnInputDown(InputEventData eventData)
         {
-            IsRecording = true;
             _inputSource = eventData.InputSource;
             _inputSourceUID = eventData.SourceId;
             GridDrawer.CleanBlackColor();
+
+            IsRecording = true;
         }
 
         public void OnInputUp(InputEventData eventData)
@@ -81,7 +81,7 @@ namespace Assets.Scripts.Gesture
 
         void Update()
         {
-            if (_inputSource == null)
+            if (!IsRecording)
                 return;
 
             Vector3 inputSourcePosition = Vector3.zero;
@@ -92,7 +92,9 @@ namespace Assets.Scripts.Gesture
             GetInputSourceRelativePosition(inputSourcePosition, out x, out y);
 
             if (x < 0 || x > 1 || y < 0 || y > 1)
-                GridDrawer.Paint(x, y);
+                return;
+
+            GridDrawer.Paint(x, y);
         }
     }
 }
