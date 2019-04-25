@@ -6,12 +6,12 @@ import numpy as np
 
 app = Flask(__name__)
 row_size = 56
-
+labels_map = ['Circle','L','RightArrow']
 @app.route('/hello',methods=['GET'])
 def meth():
     return "hey"
 
-@app.route('/type',methods=['POST'])
+@app.route('/recognize',methods=['POST'])
 def the_method():
     if request.headers['Content-Type'] == 'text/plain':
         return "Text Message: " + request.data
@@ -50,11 +50,16 @@ def the_method():
         neural_network.load_model('StoredModel.modelconfig')
         
         
-        predictions = neural_network.predict_element(np_array)
+        arg_max , max_val = neural_network.predict_element(np_array)
+        lb = labels_map[arg_max]
+        print('ArgMax : {} | MaxVal : {} |Label : {}'.format(arg_max,max_val,lb))
 
-        argmax = np.argmax(predictions[0])
-        maxVal = np.max(predictions[0])
-        return json.dumps('{"Confidence":'+str(maxVal)+',"Predicted":'+str(argmax)+'}')
+        result = {
+            'Confidence':max_val.item(),
+            'Predicted':arg_max.item(),
+            'Label':lb
+        };
+        return json.dumps(result)
 
 @app.route('/train',methods=['GET'])
 def train():
@@ -71,5 +76,6 @@ def train():
     return "Finished Fitting/Saving Model"
 
 
+
+train()
 app.run(port=6969)
-print('App is running')

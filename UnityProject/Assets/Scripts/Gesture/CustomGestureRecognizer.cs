@@ -1,16 +1,21 @@
 ﻿using Assets.Scripts.Drawing;
 using HoloToolkit.Unity;
 using HoloToolkit.Unity.InputModule;
+using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Assets.Scripts.Gesture
 {
-    public class CustomGestureRecognizer : MonoBehaviour, IInputHandler
+    public class CustomGestureRecognizer : Singleton<CustomGestureRecognizer>, IInputHandler
     {
+        public event Action<GestureRecognizedData> OnGestureRecognized;
+
         const float DetectableFrameWidth = .5f;
         const float DetectableFrameHeight = .5f;
 
@@ -41,6 +46,34 @@ namespace Assets.Scripts.Gesture
         {
             IsRecording = false;
             _inputSource = null;
+
+            var data = GridDrawer.GetData();
+
+            StartCoroutine(SendGestureDataAsync(data));
+        }
+        IEnumerator SendGestureDataAsync(byte[] data)
+        {
+            var form = new WWWForm();
+            form.AddBinaryData("binarydata", data);
+            //form.AddBinaryData("binarydata", array);
+            form.headers["Content-Type"] = "application/octet-stream";
+
+            var www = UnityWebRequest.Post("localhost:6969/recognize", form);
+            yield return www.SendWebRequest();
+
+            if (!string.IsNullOrEmpty(www.error))
+            {
+                Debug.LogFormat("Error :{0}", www.error);
+            }
+            else
+            {
+                var text = www.downloadHandler.text;
+                Debug.LogFormat("Text:{0}", text);
+
+                var resultData = JsonConvert.DeserializeObject<GestureRecognizedData>(text);
+                if (OnGestureRecognized != null)
+                    OnGestureRecognized(resultData);
+            }
         }
         void BuildCorners()
         {
