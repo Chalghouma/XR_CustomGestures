@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Assets.Scripts.Gesture;
+using HoloToolkit.Unity;
+using HoloToolkit.Unity.InputModule;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,16 +11,21 @@ using Random = UnityEngine.Random;
 
 namespace Assets.Scripts.Drawing
 {
-    public class GridDrawer : MonoBehaviour
+    public class GridDrawer : MonoBehaviour, IFocusable
     {
         const int Horizontal_Size = 56;
         const int Vertical_Size = 56;
         public GameObject GridElementPrefab;
-        public Camera MainCamera;
+        private Camera m_camera;
+
+        public static GridDrawer Instance;
         void Start()
         {
             BuildCorners();
             BuildGrid();
+
+            m_camera = CameraCache.Main;
+            Instance = this;
         }
         public Vector3 TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner;
         private void BuildCorners()
@@ -145,6 +153,38 @@ namespace Assets.Scripts.Drawing
             {
                 gridElement.Clean();
             }
+        }
+
+        public bool IsGazedAt { get; private set; }
+        public void OnFocusEnter()
+        {
+            IsGazedAt = true;
+        }
+
+        public void OnFocusExit()
+        {
+            IsGazedAt = false;
+        }
+
+        public void PaintAccordingToInputSourcePosition(Vector3 inputSourcePosition)
+        {
+            float xRelative = 0, yRelative = 0;
+            GetInputSourceRelativePosition(inputSourcePosition, out xRelative, out yRelative);
+
+            if (xRelative < 0 || xRelative > 1 || yRelative < 0 || yRelative > 1)
+                return;
+
+            Paint(xRelative, yRelative);
+        }
+
+        void GetInputSourceRelativePosition(Vector3 inputSourcePosition, out float xRelative, out float yRelative)
+        {
+            Vector3 inverted = m_camera.transform.InverseTransformPoint(inputSourcePosition);
+
+            xRelative = (inverted.x - TopLeftCorner.x) / CustomGestureRecognizer.DetectableFrameWidth;
+            yRelative = -(inverted.y - TopLeftCorner.y) / CustomGestureRecognizer.DetectableFrameHeight;
+
+            Debug.LogFormat("X,Y = {0},{1}", xRelative, yRelative);
         }
     }
 }

@@ -16,8 +16,8 @@ namespace Assets.Scripts.Gesture
     {
         public event Action<GestureRecognizedData> OnGestureRecognized;
 
-        const float DetectableFrameWidth = .5f;
-        const float DetectableFrameHeight = .5f;
+        public const float DetectableFrameWidth = .5f;
+        public const float DetectableFrameHeight = .5f;
 
         public GridDrawer GridDrawer;
 
@@ -117,8 +117,13 @@ namespace Assets.Scripts.Gesture
             if (!IsRecording)
                 return;
 
+            PaintAccordingToGripPosition(this._inputSource, this._inputSourceUID);
+        }
+
+        public void PaintAccordingToGripPosition(IInputSource inputSource, uint inputSourceUID)
+        {
             Vector3 inputSourcePosition = Vector3.zero;
-            if (!_inputSource.TryGetGripPosition(_inputSourceUID, out inputSourcePosition))
+            if (!inputSource.TryGetGripPosition(inputSourceUID, out inputSourcePosition))
                 return;
 
             float x, y;

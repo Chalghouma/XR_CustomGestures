@@ -362,7 +362,7 @@ GameObject:
   - component: {fileID: 1263852709}
   - component: {fileID: 1263852708}
   m_Layer: 0
-  m_Name: Quad
+  m_Name: GridDrawer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -380,7 +380,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GridElementPrefab: {fileID: 1937854248}
-  MainCamera: {fileID: 66846337}
   TopLeftCorner: {x: 0, y: 0, z: 0}
   TopRightCorner: {x: 0, y: 0, z: 0}
   BottomLeftCorner: {x: 0, y: 0, z: 0}
@@ -516,6 +515,7 @@ GameObject:
   - component: {fileID: 1907498693}
   - component: {fileID: 1907498692}
   - component: {fileID: 1907498694}
+  - component: {fileID: 1907498695}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -535,6 +535,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GridDrawer: {fileID: 1263852708}
+  m_trainingRecording: 0
+  m_isRecordingForTraining: 0
   _camera: {fileID: 66846337}
   Cursor: {fileID: 70334269}
 --- !u!4 &1907498693
@@ -561,6 +563,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cae8f3c88e9704a4393cb8d904b62372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1907498695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1907498691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8be6d54ac195e334b879ec2b58d9df6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GridDrawer: {fileID: 1263852708}
 --- !u!1 &1937854248
 GameObject:
   m_ObjectHideFlags: 0
