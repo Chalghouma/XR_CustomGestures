@@ -10,6 +10,18 @@ namespace Assets.Scripts.Gesture
 {
     public class GestureTypesManager : Singleton<GestureTypesManager>
     {
+        public string CurrentSelectedGestureType;
+
+        private void Start()
+        {
+            UIManager.Instance.OnGestureTypeSelected += Instance_OnGestureTypeSelected;
+        }
+
+        private void Instance_OnGestureTypeSelected(string obj)
+        {
+            CurrentSelectedGestureType = obj;
+        }
+
         const string GestureTypesKey = "GestureTypesKey";
         private List<string> GestureTypes = new List<string>();
         public void StoreTypes()

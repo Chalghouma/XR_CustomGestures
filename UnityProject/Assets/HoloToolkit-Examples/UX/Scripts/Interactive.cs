@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using HoloToolkit.Unity.InputModule;
+using System;
 
 #if UNITY_WSA || UNITY_STANDALONE_WIN
 using UnityEngine.Windows.Speech;
@@ -137,7 +138,7 @@ namespace HoloToolkit.Examples.InteractiveElements
 #if UNITY_WSA || UNITY_STANDALONE_WIN
                 if (!KeywordRequiresGaze)
                 {
-                    mKeywordRecognizer = new KeywordRecognizer(mKeywordArray);
+                    mKeywordRecognizer = new KeywordRecognizer(new string[] { Guid.NewGuid().ToString() });//Dirty workaround, really... really... really....
                     mKeywordRecognizer.OnPhraseRecognized += KeywordRecognizer_OnPhraseRecognized;
                     mKeywordRecognizer.Start();
                 }

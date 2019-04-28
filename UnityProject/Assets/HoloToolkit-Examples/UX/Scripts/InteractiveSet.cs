@@ -88,7 +88,7 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// responds to selection events
         /// </summary>
         /// <param name="index"></param>
-        private void HandleOnSelection(int index)
+        public void HandleOnSelection(int index)
         {
             if (Type == SelectionType.single)
             {

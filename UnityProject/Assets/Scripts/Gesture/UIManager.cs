@@ -1,4 +1,6 @@
 ﻿using Assets.Scripts.Drawing;
+using Assets.Scripts.UX;
+using HoloToolkit.Examples.InteractiveElements;
 using HoloToolkit.Unity;
 using System;
 using System.Collections.Generic;
@@ -6,7 +8,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
-
+using Button = HoloToolkit.Unity.Buttons.Button;
 namespace Assets.Scripts.Gesture
 {
     public class UIManager : Singleton<UIManager>
@@ -16,20 +18,34 @@ namespace Assets.Scripts.Gesture
         {
             m_gridDrawer = FindObjectOfType<GridDrawer>();
 
-            m_currentGesturesDropdown.onValueChanged.AddListener((val) =>
+            var types = GestureTypesManager.Instance.LoadTypes();
+            SetGestureTypesOptions(types);
+
+            m_currentGesturesDropdown.onValueChanged.AddListener(val =>
             {
                 if (OnGestureTypeSelected != null)
                     OnGestureTypeSelected(m_currentGesturesDropdown.options[val].text);
             });
+            
+            m_recordingEnablingToggle.OnSelectEvents.AddListener(() => { ToggleRecording(); });
 
-            m_recordingEnablingButton.onClick.AddListener(() =>
-            {
-                ToggleRecording();
-            });
+            m_addGestureType.OnButtonClicked += M_addGestureType_OnButtonClicked;
+            m_removeGestureType.OnButtonClicked += M_removeGestureType_OnButtonClicked;
         }
+        
+        private void M_removeGestureType_OnButtonClicked(GameObject obj)
+        {
+            DeleteCurrentGestureType();
+        }
+
+        private void M_addGestureType_OnButtonClicked(GameObject obj)
+        {
+            AppendGestureType();
+        }
+
         #region Recording Trainig Data related
         [SerializeField]
-        Button m_recordingEnablingButton;
+        InteractiveToggle m_recordingEnablingToggle;
 
         public void ToggleRecording()
         {
@@ -47,11 +63,12 @@ namespace Assets.Scripts.Gesture
         InputField m_gestureTypeNameInputField;
         [SerializeField]
         Dropdown m_currentGesturesDropdown;
-
+        [SerializeField]
+        Button m_addGestureType, m_removeGestureType;
         public void AppendGestureType()
         {
             var gestureTypes = GestureTypesManager.Instance.AppendGestureType(m_gestureTypeNameInputField.text);
-            AppendGestureTypesOptions(new List<string> { m_gestureTypeNameInputField.text });
+            SetGestureTypesOptions(gestureTypes);
         }
         public void DeleteCurrentGestureType()
         {
@@ -62,24 +79,30 @@ namespace Assets.Scripts.Gesture
             m_currentGesturesDropdown.ClearOptions();
 
             List<string> list = GestureTypesManager.Instance.DeleteGestureType(toBeDeleted);
-            AppendGestureTypesOptions(list);
+            SetGestureTypesOptions(list);
 
             m_currentGesturesDropdown.value = nextValue;
         }
 
-        private void AppendGestureTypesOptions(List<string> list)
+        private void SetGestureTypesOptions(List<string> list)
         {
-            List<Dropdown.OptionData> dropdownOptions = new List<Dropdown.OptionData>();
-            foreach (var element in list)
+            int selectedValue = m_currentGesturesDropdown.value;
+            SetDropdownList(m_currentGesturesDropdown, list);
+            m_currentGesturesDropdown.value = selectedValue;
+        }
+
+        private void SetDropdownList(Dropdown m_currentGesturesDropdown, List<string> list)
+        {
+            m_currentGesturesDropdown.ClearOptions();
+            List<Dropdown.OptionData> options = new List<Dropdown.OptionData>();
+            foreach (var item in list)
             {
-                dropdownOptions.Add(new Dropdown.OptionData
-                {
-                    text = element
-                });
+                options.Add(new Dropdown.OptionData { text = item });
             }
 
-            m_currentGesturesDropdown.AddOptions(dropdownOptions);
+            m_currentGesturesDropdown.AddOptions(options);
         }
+
         #endregion
     }
 }
