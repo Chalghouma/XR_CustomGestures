@@ -86,7 +86,7 @@ namespace Assets.Scripts.Drawing
             {
                 for (int j = 0; j < Vertical_Size; j++)
                 {
-                    var gridElement = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    var gridElement = Instantiate(GridElementPrefab);
                     gridElement.layer = 10;
 
                     var gridComponent = gridElement.AddComponent<GridComponent>();
@@ -127,7 +127,7 @@ namespace Assets.Scripts.Drawing
             if (verticalIndex != Horizontal_Size - 1)
             {
                 _grid[1 + index].Trigger();
-                if (verticalIndex != Vertical_Size - 1)
+                if (rowIndex != Horizontal_Size - 1)
                     _grid[1 + index + Horizontal_Size].Trigger();
             }
 

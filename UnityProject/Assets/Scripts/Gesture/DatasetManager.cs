@@ -14,7 +14,7 @@ namespace Assets.Scripts.Gesture
         const string DataSetsKey = "ExistingDatasets";
 
         List<string> m_existingDatasets = new List<string>();
-        string RootDatasetsFolder { get { return Path.Combine(Application.persistentDataPath, "Datasets"); } }
+        public string RootDatasetsFolder { get { return Path.Combine(Application.persistentDataPath, "Datasets"); } }
         public List<string> CreateDataset(string datasetName)
         {
             if (!Directory.Exists(RootDatasetsFolder))
@@ -53,6 +53,7 @@ namespace Assets.Scripts.Gesture
                 m_existingDatasets = JsonConvert.DeserializeObject<List<string>>(PlayerPrefs.GetString(DataSetsKey));
             }
 
+            Debug.LogFormat("Loading Datasets[{0}] from {1}", m_existingDatasets.Count, RootDatasetsFolder);
             return m_existingDatasets;
         }
     }

@@ -47,8 +47,8 @@ namespace Assets.Scripts.Gesture
         }
         public void OnInputDown(InputEventData eventData)
         {
-            _inputSource = eventData.InputSource;
             _inputSourceUID = eventData.SourceId;
+            _inputSource = eventData.InputSource;
 
             IsHolding = true;
         }
@@ -64,7 +64,20 @@ namespace Assets.Scripts.Gesture
             if (!IsRecording)
                 return;
 
-            CustomGestureRecognizer.Instance.PaintAccordingToGripPosition(_inputSource, _inputSourceUID);
+            if (_inputSource == null)
+                return;
+
+            Vector3 inputSourcePosition = Vector3.zero;
+            if (!_inputSource.TryGetGripPosition(_inputSourceUID, out inputSourcePosition))
+                return;
+
+            float x, y;
+            CustomGestureRecognizer.Instance.GetInputSourceRelativePosition(inputSourcePosition, out x, out y);
+
+            if (x < 0 || x > 1 || y < 0 || y > 1)
+                return;
+
+            GridDrawer.Paint(x, y);
         }
     }
 }

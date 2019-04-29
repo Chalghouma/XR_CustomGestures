@@ -4,6 +4,7 @@ using HoloToolkit.Examples.InteractiveElements;
 using HoloToolkit.Unity;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -27,7 +28,7 @@ namespace Assets.Scripts.Gesture
                     OnGestureTypeSelected(m_currentGesturesDropdown.options[val].text);
             });
 
-            //m_recordingEnablingToggle.OnSelectEvents.AddListener(() => { ToggleRecording(); });
+            m_recordingEnablingToggle.OnSelectEvents.AddListener(() => { ToggleRecording(); });
 
             m_addGestureType.OnButtonClicked += M_addGestureType_OnButtonClicked;
             m_removeGestureType.OnButtonClicked += M_removeGestureType_OnButtonClicked;
@@ -43,8 +44,27 @@ namespace Assets.Scripts.Gesture
                 if (OnDatasetSelected != null)
                     OnDatasetSelected(m_datasetsDropdown.options[val].text);
             });
+
+            m_cleanScreen.OnButtonClicked += M_cleanScreen_OnButtonClicked;
+            m_saveImage.OnButtonClicked += M_saveImage_OnButtonClicked;
+
+            OnGestureTypeSelected += UIManager_OnGestureTypeSelected;
+            OnDatasetSelected += UIManager_OnDatasetSelected;
+
+            m_currentGestureTypeName = types.Count != 0 ? types[0] : null;
+            m_currentDatasetName = datasets.Count != 0 ? datasets[0] : null;
         }
 
+        string m_currentDatasetName, m_currentGestureTypeName;
+        private void UIManager_OnDatasetSelected(string obj)
+        {
+            m_currentDatasetName = obj;
+        }
+
+        private void UIManager_OnGestureTypeSelected(string obj)
+        {
+            m_currentGestureTypeName = obj;
+        }
 
         private void M_removeGestureType_OnButtonClicked(GameObject obj)
         {
@@ -56,20 +76,6 @@ namespace Assets.Scripts.Gesture
             AppendGestureType();
         }
 
-        #region Recording Trainig Data related
-        [SerializeField]
-        InteractiveToggle m_recordingEnablingToggle;
-
-        public void ToggleRecording()
-        {
-            CustomTrainingGestureRecorder.Instance.IsRecordingAllowed = !CustomTrainingGestureRecorder.Instance.IsRecordingAllowed;
-        }
-
-        public void CleanGrid()
-        {
-            m_gridDrawer.CleanBlackColor();
-        }
-        #endregion
         #region GestureTypes related
         public event Action<string> OnGestureTypeSelected;
         [SerializeField]
@@ -151,6 +157,45 @@ namespace Assets.Scripts.Gesture
             SetDropdownList(m_datasetsDropdown, list);
             m_datasetsDropdown.value = selectedValue;
         }
+
+        #endregion
+        #region GestureRecording related
+        [SerializeField]
+        Button m_cleanScreen, m_saveImage;
+        private void M_saveImage_OnButtonClicked(GameObject obj)
+        {
+            if (string.IsNullOrEmpty(m_currentDatasetName) || string.IsNullOrEmpty(m_currentGestureTypeName))
+                throw new Exception("Please select/create a Dataset and a GetureType");
+
+            string datasetFolder = Path.Combine(
+                Path.Combine(DatasetManager.Instance.RootDatasetsFolder, m_currentDatasetName),
+                m_currentGestureTypeName);
+
+            if (!Directory.Exists(datasetFolder))
+                Directory.CreateDirectory(datasetFolder);
+
+            int count = 0;
+            while (File.Exists(Path.Combine(datasetFolder, string.Format("{0}.img", count))))
+            {
+                count++;
+            }
+
+            GridDrawer.Instance.SaveGridAsImage(Path.Combine(datasetFolder, string.Format("{0}.img", count)));
+        }
+
+        private void M_cleanScreen_OnButtonClicked(GameObject obj)
+        {
+            GridDrawer.Instance.CleanBlackColor();
+        }
+
+        [SerializeField]
+        InteractiveToggle m_recordingEnablingToggle;
+
+        public void ToggleRecording()
+        {
+            CustomTrainingGestureRecorder.Instance.IsRecordingAllowed = !CustomTrainingGestureRecorder.Instance.IsRecordingAllowed;
+        }
+
 
         #endregion
     }

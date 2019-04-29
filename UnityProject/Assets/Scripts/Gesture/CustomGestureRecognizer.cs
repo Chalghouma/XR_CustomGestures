@@ -21,7 +21,7 @@ namespace Assets.Scripts.Gesture
 
         public GridDrawer GridDrawer;
 
-        GameObject _topLeftCorner, _bottomLeftCorner, _bottomRightCorner, _topRightCorner;
+        Vector3 _topLeftCorner, _bottomLeftCorner, _bottomRightCorner, _topRightCorner;
         IInputSource _inputSource;
         uint _inputSourceUID;
         [SerializeField]
@@ -77,39 +77,22 @@ namespace Assets.Scripts.Gesture
         }
         void BuildCorners()
         {
-            GameObject cornersHolder = new GameObject { name = "DetectableFrame_CornersHolder" };
-            cornersHolder.transform.parent = _camera.transform;
-            cornersHolder.transform.localPosition = Vector3.zero;
-            cornersHolder.transform.localRotation = Quaternion.identity;
+            _topLeftCorner = new Vector3(-DetectableFrameWidth / 2, DetectableFrameHeight / 2, 0);
 
-            _topLeftCorner = new GameObject { name = "TopLeftCorner" };
-            _topLeftCorner.transform.parent = cornersHolder.transform;
-            _topLeftCorner.transform.localPosition = new Vector3(-DetectableFrameWidth / 2, DetectableFrameHeight / 2, 0);
+            _bottomLeftCorner = new Vector3(-DetectableFrameWidth / 2, -DetectableFrameHeight / 2, 0);
 
-            _bottomLeftCorner = new GameObject { name = "BottomLeftCorner" };
-            _bottomLeftCorner.transform.parent = cornersHolder.transform;
-            _bottomLeftCorner.transform.localPosition = new Vector3(-DetectableFrameWidth / 2, -DetectableFrameHeight / 2, 0);
+            _bottomRightCorner = new Vector3(DetectableFrameWidth / 2, -DetectableFrameHeight / 2, 0);
 
-            _bottomRightCorner = new GameObject { name = "BottomRightCorner" };
-            _bottomRightCorner.transform.parent = cornersHolder.transform;
-            _bottomRightCorner.transform.localPosition = new Vector3(DetectableFrameWidth / 2, -DetectableFrameHeight / 2, 0);
-
-            _topRightCorner = new GameObject { name = "TopRightCorner" };
-            _topRightCorner.transform.parent = cornersHolder.transform;
-            _topRightCorner.transform.localPosition = new Vector3(DetectableFrameWidth / 2, DetectableFrameHeight / 2, 0);
+            _topRightCorner = new Vector3(DetectableFrameWidth / 2, DetectableFrameHeight / 2, 0);
         }
-        public GameObject Cursor;
-        void GetInputSourceRelativePosition(Vector3 inputSourcePosition, out float xRelative, out float yRelative)
+        public void GetInputSourceRelativePosition(Vector3 inputSourcePosition, out float xRelative, out float yRelative)
         {
             Vector3 inverted = _camera.transform.InverseTransformPoint(inputSourcePosition);
 
-            Cursor.transform.parent = _camera.transform;
-            Cursor.transform.localPosition = inverted;
+            xRelative = (inverted.x - _topLeftCorner.x) / DetectableFrameWidth;
+            yRelative = -(inverted.y - _topLeftCorner.y) / DetectableFrameHeight;
 
-            xRelative = (inverted.x - _topLeftCorner.transform.localPosition.x) / DetectableFrameWidth;
-            yRelative = -(inverted.y - _topLeftCorner.transform.localPosition.y) / DetectableFrameHeight;
-
-            Debug.LogFormat("X,Y = {0},{1}", xRelative, yRelative);
+            //Debug.LogFormat("X,Y = {0},{1}", xRelative, yRelative);
         }
 
         void Update()
