@@ -26,13 +26,26 @@ namespace Assets.Scripts.Gesture
                 if (OnGestureTypeSelected != null)
                     OnGestureTypeSelected(m_currentGesturesDropdown.options[val].text);
             });
-            
-            m_recordingEnablingToggle.OnSelectEvents.AddListener(() => { ToggleRecording(); });
+
+            //m_recordingEnablingToggle.OnSelectEvents.AddListener(() => { ToggleRecording(); });
 
             m_addGestureType.OnButtonClicked += M_addGestureType_OnButtonClicked;
             m_removeGestureType.OnButtonClicked += M_removeGestureType_OnButtonClicked;
+
+            var datasets = DatasetManager.Instance.LoadDatasets();
+            DisplayDatasets(datasets);
+
+            m_addDataset.OnButtonClicked += M_addDataset_OnButtonClicked;
+            m_removeDataset.OnButtonClicked += M_removeDataset_OnButtonClicked;
+
+            m_datasetsDropdown.onValueChanged.AddListener(val =>
+            {
+                if (OnDatasetSelected != null)
+                    OnDatasetSelected(m_datasetsDropdown.options[val].text);
+            });
         }
-        
+
+
         private void M_removeGestureType_OnButtonClicked(GameObject obj)
         {
             DeleteCurrentGestureType();
@@ -91,16 +104,52 @@ namespace Assets.Scripts.Gesture
             m_currentGesturesDropdown.value = selectedValue;
         }
 
-        private void SetDropdownList(Dropdown m_currentGesturesDropdown, List<string> list)
+        private void SetDropdownList(Dropdown targetDropdown, List<string> list)
         {
-            m_currentGesturesDropdown.ClearOptions();
+            targetDropdown.ClearOptions();
             List<Dropdown.OptionData> options = new List<Dropdown.OptionData>();
             foreach (var item in list)
             {
                 options.Add(new Dropdown.OptionData { text = item });
             }
 
-            m_currentGesturesDropdown.AddOptions(options);
+            targetDropdown.AddOptions(options);
+        }
+
+        #endregion
+        #region Datasets related
+        public event Action<string> OnDatasetSelected;
+        [SerializeField]
+        Button m_addDataset, m_removeDataset;
+        [SerializeField]
+        InputField m_datasetInputField;
+        [SerializeField]
+        Dropdown m_datasetsDropdown;
+
+        private void M_removeDataset_OnButtonClicked(GameObject obj)
+        {
+            int nextValue = m_datasetsDropdown.value == m_datasetsDropdown.options.Count - 1 ?
+                m_datasetsDropdown.options.Count - 2 : m_datasetsDropdown.value;
+            string toBeDeleted = m_datasetsDropdown.options[m_datasetsDropdown.value].text;
+
+            m_datasetsDropdown.ClearOptions();
+
+            List<string> list = DatasetManager.Instance.DeleteDataset(toBeDeleted);
+            SetGestureTypesOptions(list);
+
+            m_datasetsDropdown.value = nextValue;
+        }
+
+        private void M_addDataset_OnButtonClicked(GameObject obj)
+        {
+            List<string> list = DatasetManager.Instance.CreateDataset(m_datasetInputField.text);
+            DisplayDatasets(list);
+        }
+        void DisplayDatasets(List<string> list)
+        {
+            int selectedValue = m_datasetsDropdown.value;
+            SetDropdownList(m_datasetsDropdown, list);
+            m_datasetsDropdown.value = selectedValue;
         }
 
         #endregion
