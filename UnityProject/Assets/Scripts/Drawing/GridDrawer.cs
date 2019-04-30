@@ -17,22 +17,50 @@ namespace Assets.Scripts.Drawing
         const int Vertical_Size = 56;
         public GameObject GridElementPrefab;
         private Camera m_camera;
+        private Renderer _renderer;
 
+        byte[] _data;
+        Texture2D _texture2D;
         public static GridDrawer Instance;
         void Start()
         {
+            InitializeTextureByteArray();
             BuildCorners();
-            BuildGrid();
+            //BuildGrid();
 
             m_camera = CameraCache.Main;
             Instance = this;
+
         }
+
+        private void InitializeTextureByteArray()
+        {
+            _data = new byte[Horizontal_Size * Vertical_Size];
+            for (int i = 0; i < _data.Length; i++)
+            {
+                _data[i] = 0x80;
+            }
+
+            _renderer = GetComponent<Renderer>();
+            _texture2D = new Texture2D(Horizontal_Size, Vertical_Size, TextureFormat.R8, false);
+            _renderer.material.mainTexture = _texture2D;
+            for (int y = 0; y < Horizontal_Size; y++)
+            {
+                for (int x = 0; x < Vertical_Size; x++)
+                {
+                    _texture2D.SetPixel(x, y, Color.black);
+
+                }
+            }
+            _texture2D.Apply();
+        }
+
         public Vector3 TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner;
         private void BuildCorners()
         {
-            var renderer = GetComponent<Renderer>();
+            _renderer = GetComponent<Renderer>();
 
-            var bounds = renderer.bounds;
+            var bounds = _renderer.bounds;
 
             var horizontalOffset = bounds.size.x / 2;
             var verticalOffset = bounds.size.y / 2;
@@ -116,22 +144,31 @@ namespace Assets.Scripts.Drawing
         /// <param name="verticalRelative">Clamped between [0,1]</param>
         public void Paint(float horizontalRelative, float verticalRelative)
         {
-            int rowIndex = (int)Mathf.Clamp(Mathf.Round(Vertical_Size * verticalRelative), 0f, (int)(Vertical_Size - 1));
-            int verticalIndex = (int)(horizontalRelative * Horizontal_Size);
-            int index = verticalIndex + rowIndex * Horizontal_Size;
+            int y = (int)Mathf.Clamp(Mathf.Round(Vertical_Size * verticalRelative), 0f, (int)(Vertical_Size - 1));
+            int x = (int)(horizontalRelative * Horizontal_Size);
+            int index = x + y * Horizontal_Size;
 
-
-            _grid[index].Trigger();
-            if (rowIndex != Vertical_Size - 1)
-                _grid[index + Horizontal_Size].Trigger();
-            if (verticalIndex != Horizontal_Size - 1)
+            PaintAtIndex(x, y);
+            if (y != Vertical_Size - 1)
             {
-                _grid[1 + index].Trigger();
-                if (rowIndex != Horizontal_Size - 1)
-                    _grid[1 + index + Horizontal_Size].Trigger();
+                PaintAtIndex(x, y + 1);
+            }
+            if (x != Horizontal_Size - 1)
+            {
+                PaintAtIndex(x + 1, y);
+                if (y != Horizontal_Size - 1)
+                    PaintAtIndex(x + 1, y + 1);
             }
 
+
+            _texture2D.Apply();
+            Debug.LogFormat("Row,Column : {0}||{1} ----- ", y, x);
         }
+        void PaintAtIndex(int x, int y)
+        {
+            _texture2D.SetPixel(x, (Vertical_Size - 1) - y, Color.red);
+        }
+
 
         bool isRecording = false;
         public byte[] GetData()
@@ -149,10 +186,14 @@ namespace Assets.Scripts.Drawing
 
         public void CleanBlackColor()
         {
-            foreach (var gridElement in _grid)
+            for (int y = 0; y < Horizontal_Size; y++)
             {
-                gridElement.Clean();
+                for (int x = 0; x < Vertical_Size; x++)
+                {
+                    _texture2D.SetPixel(x, y, Color.black);
+                }
             }
+            _texture2D.Apply();
         }
 
         public bool IsGazedAt { get; private set; }
