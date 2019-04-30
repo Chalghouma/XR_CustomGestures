@@ -1,7 +1,7 @@
 from flask import *
 import tensorflow as tf
 from neural import NeuralNet
-from dataset import prepare_data
+from dataset import prepare_data,load_from_dataset
 import numpy as np 
 
 app = Flask(__name__)
@@ -61,15 +61,15 @@ def the_method():
         };
         return json.dumps(result)
 
+
 @app.route('/train',methods=['GET'])
 def train():
     neural_network=NeuralNet(row_size,row_size)
     neural_network.build_layers()
     
-    labels_dictionary = {
-    'Circle':0,'L':1,'RightArrow':2
-    }      
-    (training_data , training_labels ) = prepare_data('Datasets/DatasetSample0/Images',labels_dictionary,row_size,row_size)  
+    (training_data,training_labels,label_mapper ) = load_from_dataset('DS',row_size,row_size)
+    #(training_data , training_labels ) = prepare_data('Datasets/DatasetSample0/Images',labels_dictionary,row_size,row_size)  
+    
     neural_network.fit_data(training_data,training_labels,10,0.998)
     neural_network.save_model('StoredModel')
         
