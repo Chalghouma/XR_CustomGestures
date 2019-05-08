@@ -28,7 +28,8 @@ namespace Assets.Scripts.Gesture
                     OnGestureTypeSelected(m_currentGesturesDropdown.options[val].text);
             });
 
-            m_recordingEnablingToggle.OnSelectEvents.AddListener(() => { ToggleRecording(); });
+            Destroy(m_recordingEnablingToggle.gameObject);
+            //m_recordingEnablingToggle.OnSelectEvents.AddListener(() => { ToggleRecording(); });
 
             m_addGestureType.OnButtonClicked += M_addGestureType_OnButtonClicked;
             m_removeGestureType.OnButtonClicked += M_removeGestureType_OnButtonClicked;
@@ -53,7 +54,17 @@ namespace Assets.Scripts.Gesture
 
             m_currentGestureTypeName = types.Count != 0 ? types[0] : null;
             m_currentDatasetName = datasets.Count != 0 ? datasets[0] : null;
+
+            CustomGestureRecognizer.Instance.OnGestureRecognized += Instance_OnGestureRecognized;
         }
+        #region OnGestureRecognized Related
+        [SerializeField]
+        TextMesh _recognitionResult;
+        private void Instance_OnGestureRecognized(GestureRecognizedData obj)
+        {
+            _recognitionResult.text = obj.ToString();
+        }
+        #endregion
 
         string m_currentDatasetName, m_currentGestureTypeName;
         private void UIManager_OnDatasetSelected(string obj)
@@ -88,6 +99,9 @@ namespace Assets.Scripts.Gesture
         {
             var gestureTypes = GestureTypesManager.Instance.AppendGestureType(m_gestureTypeNameInputField.text);
             SetGestureTypesOptions(gestureTypes);
+
+            if (string.IsNullOrEmpty(m_currentGestureTypeName))
+                m_currentGestureTypeName = gestureTypes[0];
         }
         public void DeleteCurrentGestureType()
         {
@@ -150,6 +164,9 @@ namespace Assets.Scripts.Gesture
         {
             List<string> list = DatasetManager.Instance.CreateDataset(m_datasetInputField.text);
             DisplayDatasets(list);
+
+            if (string.IsNullOrEmpty(m_currentDatasetName))
+                m_currentDatasetName = list[0];
         }
         void DisplayDatasets(List<string> list)
         {
@@ -164,23 +181,50 @@ namespace Assets.Scripts.Gesture
         Button m_cleanScreen, m_saveImage;
         private void M_saveImage_OnButtonClicked(GameObject obj)
         {
+            if (string.IsNullOrEmpty(m_currentDatasetName))
+                m_currentDatasetName = "DS";
+            if (string.IsNullOrEmpty(m_currentGestureTypeName))
+                m_currentGestureTypeName = "L";
+
             if (string.IsNullOrEmpty(m_currentDatasetName) || string.IsNullOrEmpty(m_currentGestureTypeName))
                 throw new Exception("Please select/create a Dataset and a GetureType");
 
-            string datasetFolder = Path.Combine(
-                Path.Combine(DatasetManager.Instance.RootDatasetsFolder, m_currentDatasetName),
-                m_currentGestureTypeName);
-
+            string datasetFolder = Path.Combine(DatasetManager.Instance.RootDatasetsFolder, m_currentDatasetName);
             if (!Directory.Exists(datasetFolder))
-                Directory.CreateDirectory(datasetFolder);
+                try
+                {
+                    DirectoryInfo info = Directory.CreateDirectory(datasetFolder);
+                    Debug.LogFormat("DatasetFolder Correctly Created : {0} | Exists : {1}", info.FullName, info.Exists);
+                }
+                catch (Exception exp)
+                {
+                    Debug.LogFormat("Exception while Creating Directory : {0}. Exception is : {1}", datasetFolder, exp);
+                }
+
+
+            string gestureTypeFolder = Path.Combine(
+                datasetFolder,
+                m_currentGestureTypeName);
+            if (!Directory.Exists(gestureTypeFolder))
+                try
+                {
+                    DirectoryInfo info = Directory.CreateDirectory(gestureTypeFolder);
+                    Debug.LogFormat("DatasetFolder Correctly Created : {0} | Exists : {1}", info.FullName, info.Exists);
+                }
+                catch (Exception exp)
+                {
+                    Debug.LogFormat("Exception while Creating Directory : {0}. Exception is : {1}", gestureTypeFolder, exp);
+                }
 
             int count = 0;
-            while (File.Exists(Path.Combine(datasetFolder, string.Format("{0}.img", count))))
+            while (File.Exists(Path.Combine(gestureTypeFolder, string.Format("{0}", count))))
             {
                 count++;
             }
 
-            GridDrawer.Instance.SaveGridAsImage(Path.Combine(datasetFolder, string.Format("{0}.img", count)));
+            GridDrawer.Instance.SaveGridAsImage(
+                Path.Combine(gestureTypeFolder, string.Format("{0}", count))
+                .Replace("\\\\", "\\").Replace("\\", "/"));
         }
 
         private void M_cleanScreen_OnButtonClicked(GameObject obj)
@@ -194,6 +238,7 @@ namespace Assets.Scripts.Gesture
         public void ToggleRecording()
         {
             CustomTrainingGestureRecorder.Instance.IsRecordingAllowed = !CustomTrainingGestureRecorder.Instance.IsRecordingAllowed;
+            CustomGestureRecognizer.Instance.gameObject.SetActive(!CustomTrainingGestureRecorder.Instance.IsRecordingAllowed);
         }
 
 

@@ -12,7 +12,7 @@ namespace Assets.Scripts.Gesture
     public class CustomTrainingGestureRecorder : Singleton<CustomTrainingGestureRecorder>, IInputHandler
     {
         private bool m_isHolding;
-        private bool m_isRecordingAllowed;
+        private bool m_isRecordingAllowed=true;
 
         public bool IsHolding
         {

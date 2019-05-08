@@ -31,6 +31,8 @@ namespace Assets.Scripts.Gesture
             _camera = CameraCache.Main;
 
             BuildCorners();
+
+
         }
         public bool IsRecording { get; private set; }
         public void OnInputDown(InputEventData eventData)
@@ -49,7 +51,7 @@ namespace Assets.Scripts.Gesture
 
             var data = GridDrawer.GetData();
 
-            StartCoroutine(SendGestureDataAsync(data));
+            //StartCoroutine(SendGestureDataAsync(data));
         }
         IEnumerator SendGestureDataAsync(byte[] data)
         {

@@ -10,5 +10,10 @@ namespace Assets.Scripts.Gesture
         public double Confidence { get; set; }
         public double Predicted { get; set; }
         public string Label { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Confidence:{0}||Predicted:{1}", Confidence, Predicted);
+        }
     }
 }

@@ -36,10 +36,6 @@ namespace Assets.Scripts.Drawing
         private void InitializeTextureByteArray()
         {
             _data = new byte[Horizontal_Size * Vertical_Size];
-            for (int i = 0; i < _data.Length; i++)
-            {
-                _data[i] = 0x80;
-            }
 
             _renderer = GetComponent<Renderer>();
             _texture2D = new Texture2D(Horizontal_Size, Vertical_Size, TextureFormat.R8, false);
@@ -49,7 +45,6 @@ namespace Assets.Scripts.Drawing
                 for (int x = 0; x < Vertical_Size; x++)
                 {
                     _texture2D.SetPixel(x, y, Color.black);
-
                 }
             }
             _texture2D.Apply();
@@ -87,13 +82,21 @@ namespace Assets.Scripts.Drawing
         {
             if (File.Exists(filePath))
                 File.Delete(filePath);
-
             var array = GetData();
-            using (var fileStream = File.Create(filePath, array.Length))
+            try
             {
-                fileStream.Write(array, 0, array.Length);
-                fileStream.Flush();
+                File.WriteAllBytes(filePath, array);
             }
+            catch (Exception exp)
+            {
+                Debug.LogFormat("Couldn't write byte[{0}] at {1}", array.Length, filePath); 
+            }
+
+            //using (var fileStream = File.Create(filePath, array.Length))
+            //{
+            //    fileStream.Write(array, 0, array.Length);
+            //    fileStream.Flush();
+            //}
         }
 
         List<GridComponent> _grid;
@@ -164,8 +167,10 @@ namespace Assets.Scripts.Drawing
             _texture2D.Apply();
             Debug.LogFormat("Row,Column : {0}||{1} ----- ", y, x);
         }
+
         void PaintAtIndex(int x, int y)
         {
+            _data[x + y * (Horizontal_Size - 1)] = 0xFF;
             _texture2D.SetPixel(x, (Vertical_Size - 1) - y, Color.red);
         }
 
@@ -173,14 +178,7 @@ namespace Assets.Scripts.Drawing
         bool isRecording = false;
         public byte[] GetData()
         {
-            var array = new byte[Horizontal_Size * Vertical_Size];
-
-            foreach (var gridComponent in _grid)
-            {
-                array[gridComponent.Index] = gridComponent.IsSet ? (byte)255 : (byte)0;
-            }
-
-            return array;
+            return _data;
         }
 
 
@@ -190,6 +188,7 @@ namespace Assets.Scripts.Drawing
             {
                 for (int x = 0; x < Vertical_Size; x++)
                 {
+                    _data[x + y * (Horizontal_Size - 1)] = 0x00;
                     _texture2D.SetPixel(x, y, Color.black);
                 }
             }

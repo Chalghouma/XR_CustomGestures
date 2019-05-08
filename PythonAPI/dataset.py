@@ -62,7 +62,7 @@ def load_from_dataset(dataset_name,width,height):
     images_rootfolder = join(os.path.dirname(os.path.realpath('__file__')) , 'Datasets',dataset_name,'Images')
     categories_subfolders = []
     label_mapper = []
-    print(listdir(images_rootfolder))
+    print('images_rootfolder : {}'.format(listdir(images_rootfolder)))
 
     #We get the subdirectories like : Dataset/DS/Images/Circle , Dataset/DS/Images/RightArrow , ...
     for sub_directory in listdir(images_rootfolder):
@@ -102,9 +102,3 @@ def load_from_dataset(dataset_name,width,height):
 
 def get_fullpath(path):
     return join ( os.path.dirname(os.path.realpath('__file__'))   , path)
-
-
-
-(binary , labels , mapper  ) = load_from_dataset('DatasetSample0',56,56)
-print(labels)
-print(mapper)
