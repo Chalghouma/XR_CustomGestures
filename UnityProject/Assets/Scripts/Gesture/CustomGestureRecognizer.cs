@@ -16,9 +16,6 @@ namespace Assets.Scripts.Gesture
     {
         public event Action<GestureRecognizedData> OnGestureRecognized;
 
-        public const float DetectableFrameWidth = .5f;
-        public const float DetectableFrameHeight = .5f;
-
         public GridDrawer GridDrawer;
 
         Vector3 _topLeftCorner, _bottomLeftCorner, _bottomRightCorner, _topRightCorner;
@@ -29,10 +26,6 @@ namespace Assets.Scripts.Gesture
         void Start()
         {
             _camera = CameraCache.Main;
-
-            BuildCorners();
-
-
         }
         public bool IsRecording { get; private set; }
         public void OnInputDown(InputEventData eventData)
@@ -77,22 +70,12 @@ namespace Assets.Scripts.Gesture
                     OnGestureRecognized(resultData);
             }
         }
-        void BuildCorners()
-        {
-            _topLeftCorner = new Vector3(-DetectableFrameWidth / 2, DetectableFrameHeight / 2, 0);
-
-            _bottomLeftCorner = new Vector3(-DetectableFrameWidth / 2, -DetectableFrameHeight / 2, 0);
-
-            _bottomRightCorner = new Vector3(DetectableFrameWidth / 2, -DetectableFrameHeight / 2, 0);
-
-            _topRightCorner = new Vector3(DetectableFrameWidth / 2, DetectableFrameHeight / 2, 0);
-        }
         public void GetInputSourceRelativePosition(Vector3 inputSourcePosition, out float xRelative, out float yRelative)
         {
             Vector3 inverted = _camera.transform.InverseTransformPoint(inputSourcePosition);
 
-            xRelative = (inverted.x - _topLeftCorner.x) / DetectableFrameWidth;
-            yRelative = -(inverted.y - _topLeftCorner.y) / DetectableFrameHeight;
+            xRelative = (inverted.x - (-DetectableFrameController.Instance.DetectableFrameWidth / 2)) /  DetectableFrameController.Instance.DetectableFrameWidth;
+            yRelative = -(inverted.y - (DetectableFrameController.Instance.DetectableFrameHeight / 2)) / DetectableFrameController.Instance.DetectableFrameHeight;
 
             //Debug.LogFormat("X,Y = {0},{1}", xRelative, yRelative);
         }

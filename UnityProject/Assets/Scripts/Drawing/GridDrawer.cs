@@ -221,8 +221,8 @@ namespace Assets.Scripts.Drawing
         {
             Vector3 inverted = m_camera.transform.InverseTransformPoint(inputSourcePosition);
 
-            xRelative = (inverted.x - TopLeftCorner.x) / CustomGestureRecognizer.DetectableFrameWidth;
-            yRelative = -(inverted.y - TopLeftCorner.y) / CustomGestureRecognizer.DetectableFrameHeight;
+            xRelative = (inverted.x - TopLeftCorner.x) / DetectableFrameController.Instance.DetectableFrameWidth;
+            yRelative = -(inverted.y - TopLeftCorner.y) / DetectableFrameController.Instance.DetectableFrameHeight;
 
             Debug.LogFormat("X,Y = {0},{1}", xRelative, yRelative);
         }
