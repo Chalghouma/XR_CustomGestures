@@ -3,11 +3,13 @@ using Assets.Scripts.UX;
 using HoloToolkit.Examples.InteractiveElements;
 using HoloToolkit.Unity;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 using Button = HoloToolkit.Unity.Buttons.Button;
 namespace Assets.Scripts.Gesture
@@ -56,6 +58,9 @@ namespace Assets.Scripts.Gesture
             m_currentDatasetName = datasets.Count != 0 ? datasets[0] : null;
 
             CustomGestureRecognizer.Instance.OnGestureRecognized += Instance_OnGestureRecognized;
+
+
+            m_uploadButton.OnButtonClicked += (gO) => UploadImages();
         }
         #region OnGestureRecognized Related
         [SerializeField]
@@ -242,6 +247,56 @@ namespace Assets.Scripts.Gesture
         }
 
 
+        #endregion
+        #region Upload-Dataset related
+        [SerializeField]
+        TextMesh m_uploadLog;
+        [SerializeField]
+        Button m_uploadButton;
+        public void UploadImages()
+        {
+            if (string.IsNullOrEmpty(m_currentDatasetName) || string.IsNullOrEmpty(m_currentGestureTypeName))
+                throw new Exception("Please select/create a Dataset and a GetureType");
+
+            string datasetRootPath = Path.Combine(DatasetManager.Instance.RootDatasetsFolder, m_currentDatasetName);
+            var gesturesTypesFolders = Directory.GetDirectories(datasetRootPath);
+
+            foreach (var gestureTypeFolder in gesturesTypesFolders)
+            {
+                var existingFiles = Directory.GetFiles(gestureTypeFolder);
+                StartCoroutine(UploadFilesAsync(existingFiles));
+            }
+        }
+
+        public IEnumerator UploadFilesAsync(string[] imageFiles)
+        {
+            foreach (var imageFile in imageFiles)
+            {
+                byte[] data = File.ReadAllBytes(imageFile);
+
+                var form = new WWWForm();
+                form.AddBinaryData("binarydata", data);
+                form.headers["Content-Type"] = "application/octet-stream";
+
+                var www = UnityWebRequest.Post(string.Format("localhost:6969/store_image?dataset={0}&gesturetype={1}&imagename={2}",
+                    m_currentDatasetName, m_currentGestureTypeName, Path.GetFileNameWithoutExtension(imageFile)), form);
+                yield return www.SendWebRequest();
+
+                if (!string.IsNullOrEmpty(www.error))
+                {
+                    string err = string.Format("STORING IMAGE ERROR : {0}", www.error);
+                    Debug.LogFormat(err);
+                    m_uploadLog.text = err;
+                }
+                else
+                {
+                    var text = www.downloadHandler.text;
+                    string result = string.Format("STORING IMAGE RESULT : {0}", text);
+                    Debug.LogFormat(result);
+                    m_uploadLog.text = result;
+                }
+            }
+        }
         #endregion
     }
 }

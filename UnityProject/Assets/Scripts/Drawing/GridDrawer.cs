@@ -162,10 +162,9 @@ namespace Assets.Scripts.Drawing
                 if (y != Horizontal_Size - 1)
                     PaintAtIndex(x + 1, y + 1);
             }
-
-
+            
             _texture2D.Apply();
-            Debug.LogFormat("Row,Column : {0}||{1} ----- ", y, x);
+            //Debug.LogFormat("Row,Column : {0}||{1} ----- ", y, x);
         }
 
         void PaintAtIndex(int x, int y)

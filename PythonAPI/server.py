@@ -3,6 +3,7 @@ import tensorflow as tf
 from neural import NeuralNet
 from dataset import prepare_data,load_from_dataset
 import numpy as np 
+import os
 
 app = Flask(__name__)
 row_size = 56
@@ -74,6 +75,27 @@ def train():
     neural_network.save_model('StoredModel')
         
     return "Finished Fitting/Saving Model"
+
+@app.route('/store_image',methods=['POST'])
+def store_image():
+    dataset_name = request.args.get('dataset')
+    gesture_type=request.args.get('gesturetype')
+    image_name = request.args.get('imagename')
+
+    f = request.files['binarydata']
+    f.seek(0) 
+    my_bytes=f.read()
+
+    gesturetype_rootfolder = os.path.join(os.path.dirname(os.path.realpath('__file__')) , 'Datasets',dataset_name,gesture_type)
+    if (os.path.exists(gesturetype_rootfolder) == False):
+        os.makedirs(gesturetype_rootfolder)
+    
+    image_fullpath =os.path.join(gesturetype_rootfolder,image_name)
+    with open(image_fullpath,'wb') as file_stream:
+        file_stream.write(my_bytes)
+
+    return 'Wrote the bytes at : {}'.format(image_fullpath)
+
 
 
 
